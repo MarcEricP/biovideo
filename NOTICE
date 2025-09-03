@@ -1,0 +1,10 @@
+This project uses the following third-party components:
+
+- NumPy (BSD-3-Clause) – https://numpy.org/
+- Matplotlib (Matplotlib License, BSD-style) – https://matplotlib.org/
+- Pillow (PIL/Pillow License, BSD-style) – https://python-pillow.org/
+- appdirs (MIT) – https://github.com/ActiveState/appdirs
+- imageio-ffmpeg (BSD-2-Clause) – https://github.com/imageio/imageio-ffmpeg
+- FFmpeg (LGPL v2.1+ or GPL, depending on build) – https://ffmpeg.org/
+
+FFmpeg binaries are downloaded automatically if not found. FFmpeg is licensed separately under the LGPL or GPL. For details, please consult: https://ffmpeg.org/legal.html

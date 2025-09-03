@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+title: "biovideo"
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: "Perrin"
+    given-names: "MarcEric"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+version: "0.1.0"
+date-released: "2025-09-03"
+license: "MIT"
+repository-code: "https://github.com/MarcEricP/bioVideo"
+keywords:
+  - timelapse
+  - video 
+  - biology
+  - animation

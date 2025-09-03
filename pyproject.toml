@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "biovideo"
+version = "0.1.0"
+description = "Dendritic Morphogenesis Analysis: animation utilities with FFmpeg auto-setup"
+readme = "README.md"
+authors = [{ name = "Marc Eric Perrin", email = "marceric.perrin@gmail.com" }]
+license = { text = "MIT" }
+requires-python = ">=3.9"
+dependencies = [
+"numpy>=1.23",
+"matplotlib>=3.6",
+"Pillow>=10.0",
+"appdirs>=1.4",
+"imageio-ffmpeg>=0.4.9" # helpful to locate ffmpeg if available
+]
+
+
+[project.urls]
+Homepage = "https://github.com/MarcEricP/biovideo"
+
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+
+[tool.setuptools.packages.find]
+where = ["src"]
