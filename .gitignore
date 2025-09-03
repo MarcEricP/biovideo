@@ -1,1 +1,4 @@
 _out/
+*.pyc
+*.mp4
+biovideo.egg-info/
