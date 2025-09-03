@@ -10,6 +10,7 @@ pip install -e .
 ```python
 from biovideo import make_movie
 # see examples/demo_generate.py
+```
 
 ## Acknowledgments
 This project builds upon the work of:
