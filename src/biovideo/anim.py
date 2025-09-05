@@ -55,6 +55,7 @@ def make_movie(
     scale_width: float = 10,
     time_interval: float = 5,
     time_unit: str = "sec",
+    pos_time = (0.1,0.1),
     fps: int = 10,
     img_cmap: ColormapLike = "gray",
     mask_cmap: Optional[ColormapLike] = None,
@@ -82,6 +83,7 @@ def make_movie(
         Number of pixels corresponding to num_unit_scale units.
     space_unit : str
         Text unit for the scale bar (default: µm).
+    pos_time : where to put the timestamp (expressed in proportion of height and width)
     img_cmap : str or matplotlib.colors.Colormap
         **Colormap for the movie frames**. Accepts a Matplotlib colormap name (e.g. "gray", "magma")
         or a Colormap instance (e.g. matplotlib.cm.viridis).
@@ -135,15 +137,15 @@ def make_movie(
     if mask is not None:
         default_mask_cmap = rand_cmap(mask.max() + 1, type='bright', first_color_black=True, last_color_black=False, second_color_red=first_label_red)
         mask_cmap_resolved = _resolve_cmap(mask_cmap, default_mask_cmap)
-        if not label_mask:
-            img_mask = ax.imshow(mask[0], cmap=mask_cmap_resolved)
-        else:
-            rgba_mask = np.zeros(mask.shape + (4,), dtype=float)
-            pil_font = _pil_font(fontsize, label_font_path)
-            for t in range(mask.shape[0]):
-                rgba = mask_cmap_resolved(mask[t])
-                final_img = (255 * rgba).astype(np.uint8)
-                pil_final = PILImage.fromarray(final_img)
+
+
+        rgba_mask = np.zeros(mask.shape + (4,), dtype=float)
+        pil_font = _pil_font(fontsize, label_font_path)
+        for t in range(mask.shape[0]):
+            rgba = mask_cmap_resolved(mask[t])
+            final_img = (255 * rgba).astype(np.uint8)
+            pil_final = PILImage.fromarray(final_img)
+            if label_mask:
                 draw = ImageDraw.Draw(pil_final)
                 values = np.unique(mask[t])
                 values = values[values != 0]
@@ -154,15 +156,15 @@ def make_movie(
                     centroid = (int(np.round(cc.mean()) - 30), int(np.round(rr.mean()) - 30))
                     color = tuple(int(255 * c) for c in mask_cmap_resolved(val)[:3])
                     draw.text(centroid, f"{val - 1}", fill=color, font=pil_font)
-                rgba_mask[t] = np.array(pil_final) / 255.0
-            img_mask = ax.imshow(rgba_mask[0])
+            rgba_mask[t] = np.array(pil_final) / 255.0
+        img_mask = ax.imshow(rgba_mask[0])
 
-    time_text = ax.text(int(0.1 * H), int(0.1 * W * aspect_ratio), '', fontsize=fontsize, color='white')
+    time_text = ax.text(int(pos_time[0] * H), int(pos_time[1] * W * aspect_ratio), '', fontsize=fontsize, color='white')
 
     def update_frame(frame: int):
         img.set_data(movie[frame])
         if mask is not None:
-            img_mask.set_data(rgba_mask[frame] if label_mask else mask[frame])
+            img_mask.set_data(rgba_mask[frame])
         tval = time_interval * frame
         if float(tval).is_integer():
             time_text.set_text(f"{int(tval)} {time_unit}")
@@ -182,6 +184,7 @@ def make_movie_and_plot(
     xlabel: str = "",
     ylabel: str = "",
     mask: np.ndarray | None = None,
+    label_mask = False,
     num_unit_scale: float = 1,
     scale: float = 16,
     space_unit: str = "μm",
@@ -190,12 +193,14 @@ def make_movie_and_plot(
     scale_width: float = 10,
     time_interval: float = 5,
     time_unit: str = "sec",
+    pos_time = (0.1,0.1),
     fps: int = 10,
     img_cmap: ColormapLike = "gray",
     mask_cmap: Optional[ColormapLike] = None,
     h_figsize: float = 20,
     fontsize: int = 15,
     first_label_red: bool = False,
+    label_font_path: str | None = None,
 ) -> None:
     """Same as make_movie, with an extra metric trace plotted alongside.
 
@@ -231,12 +236,33 @@ def make_movie_and_plot(
     )
     ax[0].add_artist(scalebar)
 
+    rgba_mask = None
     if mask is not None:
-        default_mask_cmap = rand_cmap(mask.max() + 1, type='bright', first_color_black=True, second_color_red=first_label_red, last_color_black=False)
+        default_mask_cmap = rand_cmap(mask.max() + 1, type='bright', first_color_black=True, last_color_black=False, second_color_red=first_label_red)
         mask_cmap_resolved = _resolve_cmap(mask_cmap, default_mask_cmap)
-        img_mask = ax[0].imshow(mask[0], cmap=mask_cmap_resolved)
 
-    time_text = ax[0].text(int(0.1 * H), int(0.1 * W * aspect_ratio), '', fontsize=fontsize, color='white')
+
+        rgba_mask = np.zeros(mask.shape + (4,), dtype=float)
+        pil_font = _pil_font(fontsize, label_font_path)
+        for t in range(mask.shape[0]):
+            rgba = mask_cmap_resolved(mask[t])
+            final_img = (255 * rgba).astype(np.uint8)
+            pil_final = PILImage.fromarray(final_img)
+            if label_mask:
+                draw = ImageDraw.Draw(pil_final)
+                values = np.unique(mask[t])
+                values = values[values != 0]
+                for val in values:
+                    rr, cc = np.nonzero(mask[t] == val)
+                    if rr.size == 0:
+                        continue
+                    centroid = (int(np.round(cc.mean()) - 30), int(np.round(rr.mean()) - 30))
+                    color = tuple(int(255 * c) for c in mask_cmap_resolved(val)[:3])
+                    draw.text(centroid, f"{val - 1}", fill=color, font=pil_font)
+            rgba_mask[t] = np.array(pil_final) / 255.0
+        img_mask = ax[0].imshow(rgba_mask[0])
+
+    time_text = ax[0].text(int(pos_time[0] * H), int(pos_time[1] * W * aspect_ratio), '', fontsize=fontsize, color='white')
 
     ax[1].plot(time, metric, zorder=0)
     ax[1].set_xlabel(xlabel)
@@ -256,7 +282,7 @@ def make_movie_and_plot(
     def update_frame(frame: int):
         img.set_data(movie[frame])
         if mask is not None:
-            img_mask.set_data(mask[frame])
+            img_mask.set_data(rgba_mask[frame])
         tval = time_interval * frame
         if float(tval).is_integer():
             time_text.set_text(f"{int(tval)} {time_unit}")
