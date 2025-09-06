@@ -22,7 +22,7 @@ def rand_cmap(nlabels: int, *,
     """
     rng = np.random.default_rng(seed)
     if nlabels <= 0:
-        return ListedColormap([[0, 0, 0]])
+        return ListedColormap([[0, 0, 0,0]])
 
 
     if type == "bright":
@@ -31,18 +31,20 @@ def rand_cmap(nlabels: int, *,
         V = rng.uniform(0.8, 1.0, nlabels)
         import colorsys
         cols = [colorsys.hsv_to_rgb(h, s, v) for h, s, v in zip(H, S, V)]
+        cols = [a + (1,) for a in cols]
     elif type == "soft":
         cols = rng.uniform(0.6, 0.95, size=(nlabels, 3)).tolist()
+        cols = [a + (1,) for a in cols]
     else:
         raise ValueError("type must be 'bright' or 'soft'")
 
 
     if first_color_black and nlabels > 0:
-        cols[0] = (0.0, 0.0, 0.0)
+        cols[0] = (0.0, 0.0, 0.0, 0)
     if second_color_red and nlabels > 1:
-        cols[1] = (1.0, 0.1, 0.1)
+        cols[1] = (1.0, 0.1, 0.1, 1)
     if last_color_black and nlabels > 2:
-        cols[-1] = (0.0, 0.0, 0.0)
+        cols[-1] = (0.0, 0.0, 0.0, 1)
 
 
     return ListedColormap(cols)
