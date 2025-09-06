@@ -59,7 +59,7 @@ make_movie(
     )
  ```
  ![movie](examples/generated_movies/movie_with_plot.gif)
-## Acknowledgments
+<!--## Acknowledgments
 This project builds upon the work of:
 
 - [NumPy](https://numpy.org/) (BSD-3)
@@ -70,7 +70,7 @@ This project builds upon the work of:
 - [FFmpeg](https://ffmpeg.org/) (LGPL v2.1+ or GPL, depending on build)
 
 FFmpeg binaries are downloaded automatically if not found. Please see the [FFmpeg license terms](https://ffmpeg.org/legal.html).
-
+-->
 <!--## Cite this work
 ```bibtex
 @software{Perrin_shrugnet_2025,
