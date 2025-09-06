@@ -31,7 +31,7 @@ make_movie(
     scale_width=3,
     )
 ```
-![movie](examples/generated_movies/movie_with_plot.gif)
+![movie](examples/generated_movies/movie.gif)
 
 ### Movie with plot
  ```python

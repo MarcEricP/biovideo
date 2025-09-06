@@ -1,5 +1,6 @@
 _out/
 *.pyc
 *.mp4
+*.tif
 biovideo.egg-info/
 __pychache__/
