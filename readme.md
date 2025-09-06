@@ -1,6 +1,8 @@
 # biovideo
 Little package for combining timelapse and mask as numpy array into mp4 videos. Also provides a scalebar and timestamp. Auto-detects FFmpeg and downloads a static build if missing.
 ![Demo](examples/generated_movies/movie_tracking.gif)
+
+
 (tracking by BranchTrack https://github.com/MarcEricP/BranchTrack)
 ## Install
 ```bash
