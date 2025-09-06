@@ -49,6 +49,12 @@ def make_movie(
     save_path: str,
     mask: np.ndarray | None = None,
     label_mask: bool = False,
+    time: np.ndarray = None,
+    metric: np.ndarray = None,
+    xlabel: str = "",
+    ylabel: str = "",
+    constant_amplitude = None,
+    y_not_under_zero = True,
     num_unit_scale: float = 1,
     scale: float = 16,
     space_unit: str = "μm",
@@ -110,115 +116,23 @@ def make_movie(
 
     T, H, W = movie.shape
     aspect_ratio = H / W
-    plt.rcParams["figure.figsize"] = (h_figsize / aspect_ratio, h_figsize)
+    
 
-    fig, ax = plt.subplots()
-    fig.subplots_adjust(left=0, bottom=0, right=1, top=1)
-    ax.axis("off")
+    with_plot = not(time is None or metric is None)
+    if not(with_plot):
+        plt.rcParams["figure.figsize"] = (h_figsize / aspect_ratio, h_figsize)
+        fig, ax = plt.subplots()
+        fig.subplots_adjust(left=0, bottom=0, right=1, top=1)
+        ax = [ax]
+        
+    else:
+        plt.rcParams["figure.figsize"] = (h_figsize, h_figsize * 3 / 8)
+        plt.rcParams.update({'font.size': 20})
 
-    img_cmap_resolved = _resolve_cmap(img_cmap, "gray")
-    img = ax.imshow(movie[0], cmap=img_cmap_resolved)
-
-    fontprops = fm.FontProperties(size=fontsize)
-    scalebar = AnchoredSizeBar(
-        ax.transData,
-        scale * num_unit_scale,
-        f"{num_unit_scale} {space_unit}",
-        "lower right",
-        pad=0.1,
-        color="white",
-        frameon=False,
-        size_vertical=scale_width,
-        fontproperties=fontprops,
-    )
-    ax.add_artist(scalebar)
-
-    rgba_mask = None
-    if mask is not None:
-        default_mask_cmap = rand_cmap(mask.max() + 1, type='bright', first_color_black=True, last_color_black=False, second_color_red=first_label_red)
-        mask_cmap_resolved = _resolve_cmap(mask_cmap, default_mask_cmap)
-
-
-        rgba_mask = np.zeros(mask.shape + (4,), dtype=float)
-        pil_font = _pil_font(fontsize, label_font_path)
-        for t in range(mask.shape[0]):
-            rgba = mask_cmap_resolved(mask[t])
-            final_img = (255 * rgba).astype(np.uint8)
-            pil_final = PILImage.fromarray(final_img)
-            if label_mask:
-                draw = ImageDraw.Draw(pil_final)
-                values = np.unique(mask[t])
-                values = values[values != 0]
-                for val in values:
-                    rr, cc = np.nonzero(mask[t] == val)
-                    if rr.size == 0:
-                        continue
-                    centroid = (int(np.round(cc.mean()) - 30), int(np.round(rr.mean()) - 30))
-                    color = tuple(int(255 * c) for c in mask_cmap_resolved(val)[:3])
-                    draw.text(centroid, f"{val - 1}", fill=color, font=pil_font)
-            rgba_mask[t] = np.array(pil_final) / 255.0
-        img_mask = ax.imshow(rgba_mask[0])
-
-    time_text = ax.text(int(pos_time[0] * H), int(pos_time[1] * W * aspect_ratio), '', fontsize=fontsize, color='white')
-
-    def update_frame(frame: int):
-        img.set_data(movie[frame])
-        if mask is not None:
-            img_mask.set_data(rgba_mask[frame])
-        tval = time_interval * frame
-        if float(tval).is_integer():
-            time_text.set_text(f"{int(tval)} {time_unit}")
-        else:
-            time_text.set_text(f"{tval:0.2f} {time_unit}")
-
-    ani = animation.FuncAnimation(fig=fig, func=update_frame, frames=T, interval=int(1000 / fps))
-    ani.save(filename=save_path, writer='ffmpeg')
-    plt.close(fig)
-
-
-def make_movie_and_plot(
-    movie: np.ndarray,
-    save_path: str,
-    time: np.ndarray,
-    metric: np.ndarray,
-    xlabel: str = "",
-    ylabel: str = "",
-    mask: np.ndarray | None = None,
-    label_mask = False,
-    num_unit_scale: float = 1,
-    scale: float = 16,
-    space_unit: str = "μm",
-    constant_amplitude: float | None = None,
-    y_not_under_zero: bool = True,
-    scale_width: float = 10,
-    time_interval: float = 5,
-    time_unit: str = "sec",
-    pos_time = (0.1,0.1),
-    fps: int = 10,
-    img_cmap: ColormapLike = "gray",
-    mask_cmap: Optional[ColormapLike] = None,
-    h_figsize: float = 20,
-    fontsize: int = 15,
-    first_label_red: bool = False,
-    label_font_path: str | None = None,
-) -> None:
-    """Same as make_movie, with an extra metric trace plotted alongside.
-
-    Colormap handling is identical; see make_movie docstring for examples.
-    """
-    _prepare_ffmpeg()
-
-    T, H, W = movie.shape
-    aspect_ratio = H / W
-
-    plt.rcParams["figure.figsize"] = (h_figsize, h_figsize * 3 / 8)
-    plt.rcParams.update({'font.size': 20})
-
-    fig, ax = plt.subplots(1, 2)
-    fig.subplots_adjust(left=0.01, bottom=0.1, right=0.99, top=0.99)
+        fig, ax = plt.subplots(1, 2)
+        fig.subplots_adjust(left=0.01, bottom=0.1, right=0.99, top=0.99)
 
     ax[0].axis("off")
-
     img_cmap_resolved = _resolve_cmap(img_cmap, "gray")
     img = ax[0].imshow(movie[0], cmap=img_cmap_resolved)
 
@@ -229,7 +143,7 @@ def make_movie_and_plot(
         f"{num_unit_scale} {space_unit}",
         "lower right",
         pad=0.1,
-        color='white',
+        color="white",
         frameon=False,
         size_vertical=scale_width,
         fontproperties=fontprops,
@@ -264,20 +178,21 @@ def make_movie_and_plot(
 
     time_text = ax[0].text(int(pos_time[0] * H), int(pos_time[1] * W * aspect_ratio), '', fontsize=fontsize, color='white')
 
-    ax[1].plot(time, metric, zorder=0)
-    ax[1].set_xlabel(xlabel)
-    ax[1].set_ylabel(ylabel)
-    scat = ax[1].scatter(time[0], metric[0], zorder=2, s=200)
+    if with_plot:
+        ax[1].plot(time, metric, zorder=0)
+        ax[1].set_xlabel(xlabel)
+        ax[1].set_ylabel(ylabel)
+        scat = ax[1].scatter(time[0], metric[0], zorder=2, s=200)
 
-    if constant_amplitude is not None:
-        amp = float(metric.max() - metric.min())
-        ymin = float(metric.min() - (constant_amplitude - amp) / 2)
-        ymax = float(metric.max() + (constant_amplitude - amp) / 2)
-        if ymin < 0 and y_not_under_zero:
-            diff = 0 - ymin
-            ymin += diff
-            ymax += diff
-        ax[1].set_ylim([ymin, ymax])
+        if constant_amplitude is not None:
+            amp = float(metric.max() - metric.min())
+            ymin = float(metric.min() - (constant_amplitude - amp) / 2)
+            ymax = float(metric.max() + (constant_amplitude - amp) / 2)
+            if ymin < 0 and y_not_under_zero:
+                diff = 0 - ymin
+                ymin += diff
+                ymax += diff
+            ax[1].set_ylim([ymin, ymax])
 
     def update_frame(frame: int):
         img.set_data(movie[frame])
@@ -288,10 +203,11 @@ def make_movie_and_plot(
             time_text.set_text(f"{int(tval)} {time_unit}")
         else:
             time_text.set_text(f"{tval:0.2f} {time_unit}")
-        try:
-            scat.set_offsets(np.array([[time[frame], metric[frame]]]))
-        except Exception:
-            pass
+        if with_plot:
+            try:
+                scat.set_offsets(np.array([[time[frame], metric[frame]]]))
+            except Exception:
+                pass
 
     ani = animation.FuncAnimation(fig=fig, func=update_frame, frames=T, interval=int(1000 / fps))
     ani.save(filename=save_path, writer='ffmpeg')

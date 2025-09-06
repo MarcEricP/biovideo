@@ -1,7 +1,6 @@
 import os
 import numpy as np
-from biovideo import make_movie, make_movie_and_plot
-from matplotlib import cm
+from biovideo import make_movie
 from matplotlib.colors import ListedColormap
 from skimage import io,morphology
 
@@ -33,7 +32,7 @@ make_movie(
     fps=5,
     img_cmap = "viridis",
     mask_cmap = mask_cmap,
-    fontsize=15,
+    fontsize=20,
     scale_width=3,
     )
 
@@ -41,20 +40,24 @@ make_movie(
 time = np.arange(movie.shape[0])
 metric = np.sin(time / 10) + np.random.normal(0, 0.05, size=movie.shape[0])
 
-make_movie_and_plot(
+make_movie(
     movie, 
     os.path.join(outdir, os.path.join(outdir, "movie_with_plot.mp4")),
-    time,
-    metric, 
-    "t", 
-    "metric",
+    time=time,
+    metric=metric, 
+    xlabel="t", 
+    ylabel="metric",
     mask=mask,  
     num_unit_scale=3,
     scale = 16,
     space_unit="µm",
     time_interval=1,
     time_unit="min",
+    pos_time = (0.05,0.1),
     fps=5,
     img_cmap = "gray",
-    mask_cmap = mask_cmap
+    mask_cmap = mask_cmap,
+    fontsize=45,
+    scale_width=3,
+    h_figsize=20,
     )
