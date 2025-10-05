@@ -128,11 +128,11 @@ def make_time_lapse(
             ax.imshow(rgba_mask_sel[f], interpolation="nearest", alpha=0.7)
 
         # Timestamp (match make_movie style: pos in pixels of the Axes extent)
-        tval = time_interval * f
+        tval = time_interval * (f)
         ttxt = f"{int(tval)} {time_unit}" if float(tval).is_integer() else f"{tval:0.2f} {time_unit}"
         ax.text(int(pos_time[0] * H), int(pos_time[1] * W * aspect_ratio), ttxt,
                 fontsize=fontsize, color='white',
-                bbox=dict(boxstyle="round,pad=0.2", facecolor="black", alpha=0.3, edgecolor="none"))
+                bbox=dict(boxstyle="round,pad=0.2", facecolor="black", alpha=0., edgecolor="none"))
 
         # Scale bar only on the last panel
         if idx == len(frames) - 1:
