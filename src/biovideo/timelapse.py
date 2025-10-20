@@ -26,6 +26,8 @@ def make_time_lapse(
         scale_width: float = 10,
         time_interval: float = 5,
         time_unit: str = "sec",
+        time_offset = 0,
+        is_hour = False,
         pos_time = (0.1, 0.1),
         img_cmap: ColormapLike = "gray",
         mask_cmap: Optional[ColormapLike] = None,
@@ -128,8 +130,14 @@ def make_time_lapse(
             ax.imshow(rgba_mask_sel[f], interpolation="nearest", alpha=0.7)
 
         # Timestamp (match make_movie style: pos in pixels of the Axes extent)
-        tval = time_interval * (f)
-        ttxt = f"{int(tval)} {time_unit}" if float(tval).is_integer() else f"{tval:0.2f} {time_unit}"
+        tval = time_interval * (f) + time_offset
+        formatted_time = int(tval)
+        if is_hour:
+            n_hour = int(tval)
+            remaining = int((tval - int(tval))*60)
+            n_minutes = remaining if remaining > 0 else ""
+            formatted_time = f"{n_hour}h{n_minutes}"
+        ttxt = f"{formatted_time} {time_unit}" if float(tval).is_integer() else f"{tval:0.2f} {time_unit}"
         ax.text(int(pos_time[0] * H), int(pos_time[1] * W * aspect_ratio), ttxt,
                 fontsize=fontsize, color='white',
                 bbox=dict(boxstyle="round,pad=0.2", facecolor="black", alpha=0., edgecolor="none"))
